@@ -1,0 +1,770 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Мой календарь цикла</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300&family=Inter:wght@300;400;500&display=swap');
+
+  :root {
+    --moon: #1a1a2e;
+    --deep: #16213e;
+    --rose: #c9847a;
+    --sage: #8aab8e;
+    --gold: #c4a882;
+    --plum: #7a6b8a;
+    --fog: #e8e4df;
+    --text: #2d2d2d;
+    --muted: #7a7570;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    background: var(--fog);
+    color: var(--text);
+    min-height: 100vh;
+  }
+
+  header {
+    background: var(--moon);
+    color: var(--fog);
+    padding: 2.5rem 1.5rem 2rem;
+    text-align: center;
+  }
+
+  header h1 {
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 300;
+    font-size: 2.2rem;
+    letter-spacing: 0.02em;
+    margin-bottom: 0.4rem;
+  }
+
+  header p {
+    font-size: 0.8rem;
+    color: #9999bb;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  nav {
+    display: flex;
+    justify-content: center;
+    gap: 0;
+    background: var(--deep);
+    overflow-x: auto;
+  }
+
+  nav button {
+    background: none;
+    border: none;
+    color: #9999bb;
+    font-family: 'Inter', sans-serif;
+    font-size: 0.75rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    padding: 0.9rem 1.2rem;
+    cursor: pointer;
+    white-space: nowrap;
+    border-bottom: 2px solid transparent;
+    transition: all 0.2s;
+  }
+
+  nav button.active {
+    color: var(--fog);
+    border-bottom-color: var(--rose);
+  }
+
+  main {
+    max-width: 680px;
+    margin: 0 auto;
+    padding: 1.5rem 1rem 4rem;
+  }
+
+  /* TRACKER */
+  .tracker-card {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 1rem;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+  }
+
+  .tracker-card h2 {
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 400;
+    font-size: 1.3rem;
+    margin-bottom: 1.2rem;
+    color: var(--moon);
+  }
+
+  .day-input {
+    margin-bottom: 1rem;
+  }
+
+  .day-input label {
+    display: block;
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    color: var(--muted);
+    margin-bottom: 0.4rem;
+  }
+
+  .day-input input[type="number"],
+  .day-input input[type="text"],
+  .day-input textarea {
+    width: 100%;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 0.6rem 0.8rem;
+    font-family: 'Inter', sans-serif;
+    font-size: 0.9rem;
+    color: var(--text);
+    background: var(--fog);
+    outline: none;
+    transition: border-color 0.2s;
+  }
+
+  .day-input input:focus,
+  .day-input textarea:focus {
+    border-color: var(--rose);
+  }
+
+  .day-input textarea {
+    resize: vertical;
+    min-height: 60px;
+  }
+
+  .scale-row {
+    display: flex;
+    gap: 0.5rem;
+  }
+
+  .scale-btn {
+    flex: 1;
+    padding: 0.6rem 0;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    background: var(--fog);
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.15s;
+    font-family: 'Inter', sans-serif;
+    color: var(--text);
+  }
+
+  .scale-btn.selected {
+    background: var(--rose);
+    border-color: var(--rose);
+    color: white;
+  }
+
+  .mood-row {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+  }
+
+  .mood-btn {
+    padding: 0.4rem 0.9rem;
+    border: 1px solid #ddd;
+    border-radius: 20px;
+    background: var(--fog);
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.15s;
+    font-family: 'Inter', sans-serif;
+  }
+
+  .mood-btn.selected {
+    background: var(--plum);
+    border-color: var(--plum);
+    color: white;
+  }
+
+  .herb-row {
+    display: flex;
+    gap: 0.5rem;
+  }
+
+  .herb-btn {
+    flex: 1;
+    padding: 0.55rem;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    background: var(--fog);
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: all 0.15s;
+    font-family: 'Inter', sans-serif;
+    text-align: center;
+  }
+
+  .herb-btn.selected {
+    background: var(--sage);
+    border-color: var(--sage);
+    color: white;
+  }
+
+  .save-btn {
+    width: 100%;
+    padding: 0.85rem;
+    background: var(--moon);
+    color: var(--fog);
+    border: none;
+    border-radius: 10px;
+    font-family: 'Inter', sans-serif;
+    font-size: 0.85rem;
+    letter-spacing: 0.05em;
+    cursor: pointer;
+    margin-top: 0.5rem;
+    transition: background 0.2s;
+  }
+
+  .save-btn:hover { background: var(--deep); }
+
+  .saved-msg {
+    text-align: center;
+    color: var(--sage);
+    font-size: 0.8rem;
+    margin-top: 0.6rem;
+    min-height: 1.2em;
+  }
+
+  .export-btn {
+    width: 100%;
+    padding: 0.75rem;
+    background: none;
+    color: var(--muted);
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    font-family: 'Inter', sans-serif;
+    font-size: 0.8rem;
+    letter-spacing: 0.05em;
+    cursor: pointer;
+    margin-top: 0.5rem;
+    transition: all 0.2s;
+  }
+
+  .export-btn:hover {
+    border-color: var(--sage);
+    color: var(--sage);
+  }
+
+  /* LOG */
+  .log-entry {
+    background: white;
+    border-radius: 10px;
+    padding: 1rem 1.2rem;
+    margin-bottom: 0.7rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+  }
+
+  .log-date {
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    color: var(--muted);
+    margin-bottom: 0.5rem;
+  }
+
+  .log-row {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+    font-size: 0.85rem;
+  }
+
+  .log-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+  }
+
+  .log-chip span:first-child {
+    color: var(--muted);
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .log-note {
+    margin-top: 0.5rem;
+    font-size: 0.82rem;
+    color: var(--muted);
+    font-style: italic;
+  }
+
+  .empty-log {
+    text-align: center;
+    color: var(--muted);
+    padding: 2rem;
+    font-size: 0.85rem;
+    font-style: italic;
+  }
+
+  /* PHASES */
+  .phase-card {
+    border-radius: 12px;
+    padding: 1.4rem;
+    margin-bottom: 1rem;
+  }
+
+  .phase-card h3 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.3rem;
+    font-weight: 400;
+    margin-bottom: 0.3rem;
+  }
+
+  .phase-days {
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    margin-bottom: 1rem;
+  }
+
+  .phase-desc {
+    font-size: 0.85rem;
+    line-height: 1.6;
+    margin-bottom: 1rem;
+  }
+
+  .phase-section {
+    margin-bottom: 0.8rem;
+  }
+
+  .phase-section-title {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 0.4rem;
+    font-weight: 500;
+  }
+
+  .phase-items {
+    font-size: 0.83rem;
+    line-height: 1.7;
+  }
+
+  .phase-menstrual { background: #f5eaea; }
+  .phase-menstrual .phase-days { color: var(--rose); }
+  .phase-menstrual .phase-section-title { color: var(--rose); }
+
+  .phase-follicular { background: #eaf0ea; }
+  .phase-follicular .phase-days { color: var(--sage); }
+  .phase-follicular .phase-section-title { color: var(--sage); }
+
+  .phase-ovulatory { background: #f5f0e8; }
+  .phase-ovulatory .phase-days { color: var(--gold); }
+  .phase-ovulatory .phase-section-title { color: var(--gold); }
+
+  .phase-luteal { background: #eeebf2; }
+  .phase-luteal .phase-days { color: var(--plum); }
+  .phase-luteal .phase-section-title { color: var(--plum); }
+
+  .herb-tag {
+    display: inline-block;
+    padding: 0.25rem 0.7rem;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    margin-top: 0.4rem;
+  }
+
+  .herb-trava { background: #d4ead5; color: #3a6b3d; }
+  .herb-virak { background: #ddd4ea; color: #5a3d7a; }
+
+  /* WARN BOX */
+  .warn-box {
+    background: #fdf3e7;
+    border-left: 3px solid var(--gold);
+    border-radius: 8px;
+    padding: 1rem 1.2rem;
+    margin-bottom: 1rem;
+    font-size: 0.83rem;
+    line-height: 1.6;
+    color: #5a4a2a;
+  }
+
+  .warn-box strong {
+    display: block;
+    margin-bottom: 0.3rem;
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    color: var(--gold);
+  }
+
+  /* section label */
+  .section-label {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--muted);
+    margin-bottom: 0.8rem;
+    margin-top: 1.2rem;
+  }
+
+  .hidden { display: none; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Мой цикл</h1>
+  <p>Наблюдение · Ритуалы · Энергия</p>
+</header>
+
+<nav>
+  <button class="active" onclick="showTab('tracker')">Сегодня</button>
+  <button onclick="showTab('log')">Дневник</button>
+  <button onclick="showTab('phases')">Фазы</button>
+</nav>
+
+<main>
+
+  <!-- TRACKER -->
+  <div id="tab-tracker">
+    <p class="section-label">Запись дня</p>
+
+    <div class="tracker-card">
+      <h2>Что сейчас</h2>
+
+      <div class="day-input">
+        <label>День цикла (если знаешь)</label>
+        <input type="number" id="cycleDay" min="1" max="45" placeholder="например, 1">
+      </div>
+
+      <div class="day-input">
+        <label>Энергия</label>
+        <div class="scale-row" id="energyScale">
+          <button class="scale-btn" onclick="selectScale('energy',1)">1</button>
+          <button class="scale-btn" onclick="selectScale('energy',2)">2</button>
+          <button class="scale-btn" onclick="selectScale('energy',3)">3</button>
+          <button class="scale-btn" onclick="selectScale('energy',4)">4</button>
+          <button class="scale-btn" onclick="selectScale('energy',5)">5</button>
+        </div>
+      </div>
+
+      <div class="day-input">
+        <label>Фокус</label>
+        <div class="scale-row" id="focusScale">
+          <button class="scale-btn" onclick="selectScale('focus',1)" style="font-size:0.75rem">Не могу</button>
+          <button class="scale-btn" onclick="selectScale('focus',2)" style="font-size:0.75rem">Сложно</button>
+          <button class="scale-btn" onclick="selectScale('focus',3)" style="font-size:0.75rem">Ок</button>
+          <button class="scale-btn" onclick="selectScale('focus',4)" style="font-size:0.75rem">Хорошо</button>
+        </div>
+      </div>
+
+      <div class="day-input">
+        <label>Настроение</label>
+        <div class="mood-row" id="moodRow">
+          <button class="mood-btn" onclick="selectMood(this)">спокойно</button>
+          <button class="mood-btn" onclick="selectMood(this)">тревожно</button>
+          <button class="mood-btn" onclick="selectMood(this)">радостно</button>
+          <button class="mood-btn" onclick="selectMood(this)">пусто</button>
+          <button class="mood-btn" onclick="selectMood(this)">творчески</button>
+          <button class="mood-btn" onclick="selectMood(this)">хочу в кокон</button>
+          <button class="mood-btn" onclick="selectMood(this)">хочу людей</button>
+        </div>
+      </div>
+
+      <div class="day-input">
+        <label>Трава сегодня</label>
+        <div class="herb-row" id="herbRow">
+          <button class="herb-btn" onclick="selectHerb(this, 'trava')">🌿 Тысячелистник</button>
+          <button class="herb-btn" onclick="selectHerb(this, 'virak')">🌸 Манжетка</button>
+          <button class="herb-btn" onclick="selectHerb(this, 'none')">Не пила</button>
+        </div>
+      </div>
+
+      <div class="day-input">
+        <label>Тело — что замечаешь</label>
+        <input type="text" id="bodyNote" placeholder="тянет живот, лёгкость, усталость...">
+      </div>
+
+      <div class="day-input">
+        <label>Ритуалы сегодня</label>
+        <div class="mood-row" id="ritualsRow">
+          <button class="mood-btn" onclick="selectRitual(this)">🌳 гамак</button>
+          <button class="mood-btn" onclick="selectRitual(this)">🚴 велик</button>
+          <button class="mood-btn" onclick="selectRitual(this)">🏔 хайк</button>
+          <button class="mood-btn" onclick="selectRitual(this)">🧘 йога</button>
+          <button class="mood-btn" onclick="selectRitual(this)">💆 массаж</button>
+          <button class="mood-btn" onclick="selectRitual(this)">🛁 баня</button>
+          <button class="mood-btn" onclick="selectRitual(this)">📚 книга</button>
+          <button class="mood-btn" onclick="selectRitual(this)">🎵 музыка</button>
+          <button class="mood-btn" onclick="selectRitual(this)">🚭 не курила</button>
+          <button class="mood-btn" onclick="selectRitual(this)">🍺 без пива</button>
+        </div>
+      </div>
+
+      <div class="day-input">
+        <label>Заметка (необязательно)</label>
+        <textarea id="freeNote" placeholder="что угодно — мысль, ощущение, открытие"></textarea>
+      </div>
+
+      <button class="save-btn" onclick="saveEntry()">Сохранить день</button>
+      <div class="saved-msg" id="savedMsg"></div>
+    </div>
+  </div>
+
+  <!-- LOG -->
+  <div id="tab-log" class="hidden">
+    <p class="section-label">История наблюдений</p>
+    <div id="logList">
+      <div class="empty-log">Ещё нет записей.<br>Начни сегодня — и сюда придут твои данные.</div>
+    </div>
+    <button class="export-btn" onclick="exportCSV()">↓ Скачать все записи (CSV)</button>
+  </div>
+
+  <!-- PHASES -->
+  <div id="tab-phases" class="hidden">
+    <p class="section-label">Твои четыре режима</p>
+
+    <div class="warn-box">
+      <strong>Важно</strong>
+      Это ориентир, не расписание. Твой цикл нерегулярный — значит, важнее сигналы тела, чем номер дня. Через 2–3 цикла наблюдений увидишь свои личные паттерны.
+    </div>
+
+    <div class="phase-card phase-menstrual">
+      <h3>Обнуление</h3>
+      <div class="phase-days">Менструация · дни ~1–5</div>
+      <div class="phase-desc">
+        Гормоны на минимуме. Тело просит покоя. Рефлексия и честность с собой — на пике. Не время запускать новое. Время — лежать, планировать, делать что-то руками под фильм.
+      </div>
+      <div class="phase-section">
+        <div class="phase-section-title">Ритуалы</div>
+        <div class="phase-items">гамак · книга под плед · массаж · баня · мягкое движение</div>
+      </div>
+      <div class="phase-section">
+        <div class="phase-section-title">Проекты</div>
+        <div class="phase-items">ревизия, что сработало · планирование нового цикла · лёгкая работа за фильмом</div>
+      </div>
+      <div class="phase-section">
+        <div class="phase-section-title">Уязвимость</div>
+        <div class="phase-items">тянет к старым привычкам — дыши, не борись</div>
+      </div>
+      <div class="herb-tag herb-trava">🌿 Тысячелистник — начало 1-й фазы</div>
+    </div>
+
+    <div class="phase-card phase-follicular">
+      <h3>Разгон</h3>
+      <div class="phase-days">Фолликулярная · дни ~6–13</div>
+      <div class="phase-desc">
+        Эстроген растёт. Появляется энергия, тяга к новому. Выше переносимость риска, лучше усваивается новое. Хочется двигаться и начинать.
+      </div>
+      <div class="phase-section">
+        <div class="phase-section-title">Ритуалы</div>
+        <div class="phase-items">велик · хайк · йога активная · новые маршруты</div>
+      </div>
+      <div class="phase-section">
+        <div class="phase-section-title">Проекты</div>
+        <div class="phase-items">новые главы · мозговые штурмы · обучение · сложные задачи</div>
+      </div>
+      <div class="phase-section">
+        <div class="phase-section-title">Уязвимость</div>
+        <div class="phase-items">можно перегрузить себя — оставь 5% воздуха</div>
+      </div>
+      <div class="herb-tag herb-trava">🌿 Тысячелистник — до овуляции</div>
+    </div>
+
+    <div class="phase-card phase-ovulatory">
+      <h3>Пик</h3>
+      <div class="phase-days">Овуляторная · дни ~14–16</div>
+      <div class="phase-desc">
+        Максимум энергии и социальной лёгкости. Хочется людей, разговоров, выхода вовне. Переговоры, презентации, важные разговоры — сюда.
+      </div>
+      <div class="phase-section">
+        <div class="phase-section-title">Ритуалы</div>
+        <div class="phase-items">хайк с подругами · социальное · уход за собой как праздник</div>
+      </div>
+      <div class="phase-section">
+        <div class="phase-section-title">Проекты</div>
+        <div class="phase-items">публичность · встречи · продажи · запуски</div>
+      </div>
+      <div class="phase-section">
+        <div class="phase-section-title">Уязвимость</div>
+        <div class="phase-items">легко взять слишком много обязательств</div>
+      </div>
+      <div class="herb-tag herb-virak">🌸 Переход на Манжетку</div>
+    </div>
+
+    <div class="phase-card phase-luteal">
+      <h3>Завершение</h3>
+      <div class="phase-days">Лютеиновая · дни ~17–28</div>
+      <div class="phase-desc">
+        Прогестерон растёт, тянет внутрь. Первая половина хороша для доведения дел до конца. Вторая (ПМС) — снова к покою и теплу. Тревога может усиливаться — это не ты, это фаза.
+      </div>
+      <div class="phase-section">
+        <div class="phase-section-title">Ритуалы</div>
+        <div class="phase-items">гамак · массажные штуки у кровати · баня · мягкий вечер</div>
+      </div>
+      <div class="phase-section">
+        <div class="phase-section-title">Проекты</div>
+        <div class="phase-items">редактура · детали · закрытие задач · рутина</div>
+      </div>
+      <div class="phase-section">
+        <div class="phase-section-title">⚠ Уязвимость</div>
+        <div class="phase-items">тревога выше · самокритика сильнее · тянет к старым привычкам<br>→ дыши · не принимай важных решений · больше сна</div>
+      </div>
+      <div class="herb-tag herb-virak">🌸 Манжетка — до конца фазы</div>
+    </div>
+
+    <p class="section-label" style="margin-top:1.5rem">Твои маркеры — заметить вовремя</p>
+    <div class="tracker-card">
+      <div class="phase-items" style="font-size:0.85rem; line-height:1.9">
+        🔴 Тревога нарастает 3+ дня подряд<br>
+        🔴 Не хочется ничего из ритуалов<br>
+        🔴 Потянуло к сигарете / пиву сильнее обычного<br>
+        🔴 Сон меньше 6 часов несколько ночей<br>
+        <br>
+        <span style="color: var(--muted); font-size:0.78rem">Это не провал. Это сигнал — что-то нужно убрать или добавить.</span>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<script>
+  const state = {
+    energy: null,
+    focus: null,
+    mood: null,
+    herb: null,
+    rituals: []
+  };
+
+  function showTab(name) {
+    ['tracker','log','phases'].forEach(t => {
+      document.getElementById('tab-'+t).classList.add('hidden');
+    });
+    document.getElementById('tab-'+name).classList.remove('hidden');
+    document.querySelectorAll('nav button').forEach((b,i) => {
+      b.classList.remove('active');
+    });
+    const tabs = ['tracker','log','phases'];
+    document.querySelectorAll('nav button')[tabs.indexOf(name)].classList.add('active');
+
+    if (name === 'log') renderLog();
+  }
+
+  function selectScale(type, val) {
+    state[type] = val;
+    const id = type === 'energy' ? 'energyScale' : 'focusScale';
+    document.querySelectorAll('#'+id+' .scale-btn').forEach((b,i) => {
+      b.classList.toggle('selected', i+1 === val);
+    });
+  }
+
+  function selectMood(btn) {
+    document.querySelectorAll('#moodRow .mood-btn').forEach(b => b.classList.remove('selected'));
+    btn.classList.add('selected');
+    state.mood = btn.textContent;
+  }
+
+  function selectHerb(btn, val) {
+    document.querySelectorAll('#herbRow .herb-btn').forEach(b => b.classList.remove('selected'));
+    btn.classList.add('selected');
+    state.herb = val;
+  }
+
+  function selectRitual(btn) {
+    btn.classList.toggle('selected');
+    const r = btn.textContent;
+    if (state.rituals.includes(r)) {
+      state.rituals = state.rituals.filter(x => x !== r);
+    } else {
+      state.rituals.push(r);
+    }
+  }
+
+  function saveEntry() {
+    const entry = {
+      date: new Date().toLocaleDateString('ru-RU', {day:'numeric', month:'long', year:'numeric'}),
+      ts: Date.now(),
+      cycleDay: document.getElementById('cycleDay').value || '?',
+      energy: state.energy,
+      focus: state.focus,
+      mood: state.mood,
+      herb: state.herb,
+      body: document.getElementById('bodyNote').value,
+      rituals: [...state.rituals],
+      note: document.getElementById('freeNote').value
+    };
+
+    const entries = JSON.parse(localStorage.getItem('cycleEntries') || '[]');
+    entries.unshift(entry);
+    localStorage.setItem('cycleEntries', JSON.stringify(entries));
+
+    const msg = document.getElementById('savedMsg');
+    msg.textContent = '✓ Сохранено';
+    setTimeout(() => msg.textContent = '', 2000);
+
+    // reset
+    document.getElementById('cycleDay').value = '';
+    document.getElementById('bodyNote').value = '';
+    document.getElementById('freeNote').value = '';
+    document.querySelectorAll('.scale-btn, .mood-btn, .herb-btn').forEach(b => b.classList.remove('selected'));
+    state.energy = null; state.focus = null; state.mood = null; state.herb = null; state.rituals = [];
+  }
+
+  const focusLabels = ['', 'Не могу', 'Сложно', 'Ок', 'Хорошо'];
+  const herbLabels = { trava: '🌿 Тысячелистник', virak: '🌸 Манжетка', none: 'без травы' };
+
+  function exportCSV() {
+    const entries = JSON.parse(localStorage.getItem('cycleEntries') || '[]');
+    if (!entries.length) { alert('Нет записей для экспорта.'); return; }
+
+    const headers = ['Дата','День цикла','Энергия','Фокус','Настроение','Трава','Тело','Ритуалы','Заметка'];
+    const rows = entries.map(e => [
+      e.date,
+      e.cycleDay,
+      e.energy || '',
+      focusLabels[e.focus] || '',
+      e.mood || '',
+      herbLabels[e.herb] || '',
+      e.body || '',
+      (e.rituals || []).join(' | '),
+      e.note || ''
+    ].map(v => `"${String(v).replace(/"/g,'""')}"`).join(','));
+
+    const csv = [headers.join(','), ...rows].join('\n');
+    const blob = new Blob(['\uFEFF'+csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'мой_цикл_' + new Date().toISOString().slice(0,10) + '.csv';
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  function renderLog() {
+    const entries = JSON.parse(localStorage.getItem('cycleEntries') || '[]');
+    const el = document.getElementById('logList');
+    if (!entries.length) {
+      el.innerHTML = '<div class="empty-log">Ещё нет записей.<br>Начни сегодня — и сюда придут твои данные.</div>';
+      return;
+    }
+    el.innerHTML = entries.map(e => `
+      <div class="log-entry">
+        <div class="log-date">${e.date} · день ${e.cycleDay}</div>
+        <div class="log-row">
+          ${e.energy ? `<div class="log-chip"><span>Энергия</span> ${e.energy}/5</div>` : ''}
+          ${e.focus ? `<div class="log-chip"><span>Фокус</span> ${focusLabels[e.focus]}</div>` : ''}
+          ${e.mood ? `<div class="log-chip"><span>Настроение</span> ${e.mood}</div>` : ''}
+          ${e.herb && e.herb !== 'none' ? `<div class="log-chip"><span>Трава</span> ${herbLabels[e.herb]}</div>` : ''}
+        </div>
+        ${e.body ? `<div class="log-note">Тело: ${e.body}</div>` : ''}
+        ${e.rituals && e.rituals.length ? `<div class="log-note">${e.rituals.join(' · ')}</div>` : ''}
+        ${e.note ? `<div class="log-note">"${e.note}"</div>` : ''}
+      </div>
+    `).join('');
+  }
+</script>
+</body>
+</html>
